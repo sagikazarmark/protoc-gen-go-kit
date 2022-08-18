@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v17
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: nix develop -c make build
+
+      - name: Test
+        run: nix develop -c make test
+
+      - name: Test proto
+        run: nix develop -c make testproto
+
+      - name: Annotate tests
+        uses: guyarb/golang-test-annotations@v0.6.0
+        if: always()
+        with:
+          test-results: build/test.json
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v17
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lint
+        run: nix develop -c make lint
+        env:
+          LINT_ARGS: --out-format=github-actions
