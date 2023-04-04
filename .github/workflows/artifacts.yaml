@@ -40,3 +40,5 @@ jobs:
       - name: Build and publish
         run: goreleaser release
         if: github.event_name == 'push' && github.ref_type == 'tag'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
