@@ -2,19 +2,23 @@
   description = "Go Kit Protoc Compiler";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/master";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = { self, nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (
-      system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          buildDeps = with pkgs; [ git go_1_19 gnumake ];
-          devDeps = with pkgs;
-            buildDeps ++ [
-              dagger
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+      in
+      rec
+      {
+        devShells = {
+          default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              git
+              go_1_20
+              gnumake
               golangci-lint
               gotestsum
               goreleaser
@@ -22,7 +26,17 @@
               protoc-gen-go
               protoc-gen-go-grpc
             ];
-        in
-          { devShell = pkgs.mkShell { buildInputs = devDeps; }; }
+
+            shellHook = ''
+              go version
+              golangci-lint --version
+              gotestsum --version
+              protoc --version
+            '';
+          };
+
+          ci = devShells.default;
+        };
+      }
     );
 }
