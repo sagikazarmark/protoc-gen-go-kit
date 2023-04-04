@@ -27,6 +27,9 @@ jobs:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare Nix shell
+        run: echo
+
       - name: Check configuration
         run: goreleaser check
 
