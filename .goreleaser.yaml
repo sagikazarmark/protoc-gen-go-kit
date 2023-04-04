@@ -19,12 +19,11 @@ sboms:
 
 signs:
   - cmd: cosign
-    # stdin: '{{ .Env.COSIGN_PWD }}'
     stdin: ""
     args:
     - "sign-blob"
     - "--yes"
-    - "--key={{ .Env.COSIGN_KEY }}"
+    - '--key={{ if index .Env "COSIGN_KEY"  }}{{ .Env.COSIGN_KEY }}{{ else }}{{ end }}'
     - "--output-signature=${signature}"
     - "${artifact}"
     artifacts: archive
