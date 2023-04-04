@@ -1,11 +1,11 @@
 # [Go Kit](https://github.com/go-kit/kit/) Protoc Compiler
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/sagikazarmark/protoc-gen-go-kit/CI?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sagikazarmark/protoc-gen-go-kit/ci.yaml?style=flat-square)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sagikazarmark/protoc-gen-go-kit?style=flat-square)](https://goreportcard.com/report/github.com/sagikazarmark/protoc-gen-go-kit)
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/mod/github.com/sagikazarmark/protoc-gen-go-kit)
 [![built with nix](https://img.shields.io/badge/builtwith-nix-7d81f7?style=flat-square)](https://builtwithnix.org)
 
-**Protoc compiler for [Go Kit](https://github.com/go-kit/kit/).**
+**Protobuf compiler plugin for [Go Kit](https://github.com/go-kit/kit/).**
 
 
 **IMPORTANT: This project is work in progress.**

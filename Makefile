@@ -5,14 +5,7 @@ export PATH := $(abspath bin/protoc/bin/):$(abspath bin/):${PATH}
 # Build variables
 BUILD_DIR ?= build
 VERSION ?= $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD)
-COMMIT_HASH ?= $(shell git rev-parse --short HEAD 2>/dev/null)
-DATE_FMT = +%FT%T%z
-ifdef SOURCE_DATE_EPOCH
-    BUILD_DATE ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "$(DATE_FMT)" 2>/dev/null || date -u "$(DATE_FMT)")
-else
-    BUILD_DATE ?= $(shell date "$(DATE_FMT)")
-endif
-LDFLAGS += -X main.version=${VERSION} -X main.commitHash=${COMMIT_HASH} -X main.buildDate=${BUILD_DATE}
+LDFLAGS += -X main.version=${VERSION}
 export CGO_ENABLED ?= 0
 
 .PHONY: build
@@ -30,24 +23,28 @@ test: ## Run tests
 	@mkdir -p ${BUILD_DIR}
 	gotestsum --no-summary=skipped --junitfile ${BUILD_DIR}/coverage.xml --jsonfile ${BUILD_DIR}/test.json --format ${TEST_FORMAT} -- -race -coverprofile=${BUILD_DIR}/coverage.txt -covermode=atomic ./...
 
-.PHONY: testproto
-testproto: build
-	protoc -I test --plugin=build/protoc-gen-go-kit --go_out=paths=source_relative:test/ --go-grpc_out=paths=source_relative:test/ --go-kit_out=paths=source_relative:test/ test/test.proto test/subtest/subtest.proto
-
 .PHONY: lint
 lint: ## Run linter
 	golangci-lint run ${LINT_ARGS}
 
-.PHONY: fix
-fix: ## Fix lint violations
+.PHONY: fmt
+fmt: ## Format code
 	golangci-lint run --fix
 
+.PHONY: testproto
+testproto: build
+	protoc -I test --plugin=build/protoc-gen-go-kit --go_out=paths=source_relative:test/ --go-grpc_out=paths=source_relative:test/ --go-kit_out=paths=source_relative:test/ test/test.proto test/subtest/subtest.proto
+
+.PHONY: check-release-config
+check-release-config:
+	goreleaser check
+
 # Dependency versions
-GOTESTSUM_VERSION ?= 1.7.0
-GOLANGCI_VERSION ?= 1.43.0
-PROTOC_VERSION ?= 3.18.0
-PROTOC_GEN_GO_VERSION ?= 1.27.1
-PROTOC_GEN_GO_GRPC_VERSION ?= 1.1.0
+GOTESTSUM_VERSION ?= 1.9.0
+GOLANGCI_VERSION ?= 1.52.2
+PROTOC_VERSION ?= 3.21.12
+PROTOC_GEN_GO_VERSION ?= 1.29.1
+PROTOC_GEN_GO_GRPC_VERSION ?= 1.3.0
 
 deps: bin/gotestsum bin/golangci-lint bin/protoc bin/protoc-gen-go bin/protoc-gen-go-grpc
 
