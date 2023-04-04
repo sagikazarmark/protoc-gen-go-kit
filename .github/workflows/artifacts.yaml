@@ -1,0 +1,40 @@
+name: Artifacts
+
+on:
+  push:
+    branches: [main]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  pull_request:
+
+defaults:
+  run:
+    shell: nix develop .#ci -c bash {0}
+
+jobs:
+  binaries:
+    name: Binaries
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check configuration
+        run: goreleaser check
+
+      - name: Check required dependencies
+        run: goreleaser healthcheck
+
+      - name: Build
+        run: goreleaser release --snapshot --skip-sign
+        if: github.event_name != 'push' || github.ref_type != 'tag'
+
+      - name: Build and publish
+        run: goreleaser release
+        if: github.event_name == 'push' && github.ref_type == 'tag'

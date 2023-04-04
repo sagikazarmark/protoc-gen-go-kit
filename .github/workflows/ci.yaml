@@ -33,9 +33,6 @@ jobs:
       - name: Test proto
         run: make testproto
 
-      - name: Check release config
-        run: make check-release-config
-
       - name: Annotate tests
         uses: guyarb/golang-test-annotations@v0.6.0
         if: always()

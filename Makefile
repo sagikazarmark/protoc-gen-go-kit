@@ -39,6 +39,13 @@ testproto: build
 check-release-config:
 	goreleaser check
 
+.PHONY: versions
+versions:
+	@go version
+	@golangci-lint --version
+	@gotestsum --version
+	@protoc --version
+
 # Dependency versions
 GOTESTSUM_VERSION ?= 1.9.0
 GOLANGCI_VERSION ?= 1.52.2

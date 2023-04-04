@@ -21,21 +21,30 @@
               gnumake
               golangci-lint
               gotestsum
-              goreleaser
               protobuf
               protoc-gen-go
               protoc-gen-go-grpc
             ];
 
             shellHook = ''
-              go version
-              golangci-lint --version
-              gotestsum --version
-              protoc --version
+              make versions
             '';
           };
 
-          ci = devShells.default;
+          ci = devShells.default.overrideAttrs (final: prev: {
+            buildInputs = prev.buildInputs ++ (with pkgs; [
+              goreleaser
+              syft
+              cosign
+            ]);
+
+            shellHook = ''
+              ${prev.shellHook}
+              goreleaser --version
+              syft --version
+              cosign version
+            '';
+          });
         };
       }
     );

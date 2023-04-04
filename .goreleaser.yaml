@@ -14,6 +14,21 @@ builds:
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
 
+sboms:
+  - artifacts: archive
+
+signs:
+  - cmd: cosign
+    # stdin: '{{ .Env.COSIGN_PWD }}'
+    stdin: ""
+    args:
+    - "sign-blob"
+    - "--yes"
+    - "--key={{ .Env.COSIGN_KEY }}"
+    - "--output-signature=${signature}"
+    - "${artifact}"
+    artifacts: archive
+
 changelog:
   skip: true
 
