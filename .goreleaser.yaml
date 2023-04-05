@@ -19,13 +19,15 @@ sboms:
 
 signs:
   - cmd: cosign
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
     stdin: ""
     args:
     - "sign-blob"
     - "--yes"
     - '--key={{ if index .Env "COSIGN_KEY"  }}{{ .Env.COSIGN_KEY }}{{ else }}{{ end }}'
     - "--output-signature=${signature}"
-    - "--output-certificate=${artifact}.pem"
+    - "--output-certificate=${certificate}"
     - "${artifact}"
     artifacts: archive
 
@@ -34,7 +36,3 @@ changelog:
 
 checksum:
   name_template: 'checksums.txt'
-
-release:
-  extra_files:
-    - glob: dist/*.pem
