@@ -66,7 +66,7 @@ func generateFileContent(file *protogen.File, g *protogen.GeneratedFile) {
 func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	handlerName := service.GoName + "Handler"
 
-	g.Annotate(handlerName, service.Location)
+	g.AnnotateSymbol(handlerName, protogen.Annotation{Location: service.Location})
 
 	g.P("// ", handlerName, " which should be called from the gRPC binding of the service")
 	g.P("// implementation. The incoming request parameter, and returned response")
@@ -86,13 +86,13 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P(deprecationComment)
 	}
 
-	g.Annotate(serverName, service.Location)
+	g.AnnotateSymbol(serverName, protogen.Annotation{Location: service.Location})
 
 	g.P("type ", serverName, " struct {")
 	g.P("*Unimplemented", service.GoName, "Server")
 	g.P()
 	for _, method := range service.Methods {
-		g.Annotate(serverName+"."+method.GoName, method.Location)
+		g.AnnotateSymbol(serverName+"."+method.GoName, protogen.Annotation{Location: method.Location})
 		if method.Desc.Options().(*descriptorpb.MethodOptions).GetDeprecated() {
 			g.P(deprecationComment)
 		}

@@ -1,51 +1,69 @@
 {
-  description = "Go Kit Protoc Compiler";
+  description = "MGA: Modern Go Application tool";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    devenv.url = "github:cachix/devenv";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-      in
-      rec
-      {
-        devShells = {
-          default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              git
-              go_1_20
+  outputs = inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.devenv.flakeModule
+      ];
+
+      systems = [ "x86_64-linux" "x86_64-darwin" "aarch64-darwin" ];
+
+      perSystem = { config, self', inputs', pkgs, system, ... }: rec {
+        devenv.shells = {
+          default = {
+            languages = {
+              go = {
+                enable = true;
+                package = pkgs.go_1_23;
+              };
+            };
+
+            packages = with pkgs; [
               gnumake
-              golangci-lint
+              go-task
+
               gotestsum
+              golangci-lint
+
+              goreleaser
+
               protobuf
               protoc-gen-go
               protoc-gen-go-grpc
             ];
 
-            shellHook = ''
-              make versions
+            scripts = {
+              versions.exec = ''
+                go version
+                golangci-lint version
+              '';
+            };
+
+            enterShell = ''
+              versions
             '';
+
+            # https://github.com/cachix/devenv/issues/528#issuecomment-1556108767
+            containers = pkgs.lib.mkForce { };
           };
 
-          ci = devShells.default.overrideAttrs (final: prev: {
-            buildInputs = prev.buildInputs ++ (with pkgs; [
+          ci = {
+            imports = [ devenv.shells.default ];
+
+            packages = with pkgs; [
               goreleaser
               syft
               cosign
-            ]);
-
-            shellHook = ''
-              ${prev.shellHook}
-              goreleaser --version
-              syft --version
-              cosign version
-            '';
-          });
+            ];
+          };
         };
-      }
-    );
+      };
+    };
 }
