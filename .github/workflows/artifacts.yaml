@@ -3,12 +3,11 @@ name: Artifacts
 on:
   push:
     branches: [main]
-    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
   pull_request:
 
-defaults:
-  run:
-    shell: nix develop .#ci -c bash {0}
+permissions:
+  contents: read
 
 jobs:
   binaries:
@@ -21,32 +20,35 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           fetch-depth: 0
 
       - name: Set up Nix
-        uses: cachix/install-nix-action@v30
+        uses: cachix/install-nix-action@3715ab1a11cac9e991980d7b4a28d80c7ebdd8f9 # v27
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up magic Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
+
       - name: Prepare Nix shell
-        run: echo
+        run: nix develop --impure .#ci
 
       - name: Check configuration
-        run: goreleaser check
+        run: nix develop --impure .#ci -c goreleaser check
 
       - name: Check required dependencies
-        run: goreleaser healthcheck
+        run: nix develop --impure .#ci -c goreleaser healthcheck
 
       - name: Build
-        run: goreleaser release --snapshot --skip-sign
+        run: nix develop --impure .#ci -c goreleaser release --clean --snapshot --skip sign
         if: github.event_name != 'push' || github.ref_type != 'tag'
 
       - name: Build and publish
-        run: goreleaser release
+        run: nix develop --impure .#ci -c goreleaser release --clean
         if: github.event_name == 'push' && github.ref_type == 'tag'
         env:
           GITHUB_TOKEN: ${{ github.token }}
