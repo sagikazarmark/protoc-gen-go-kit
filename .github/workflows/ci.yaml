@@ -39,7 +39,7 @@ jobs:
         run: nix develop --impure .#ci -c make testproto
 
       - name: Annotate tests
-        uses: guyarb/golang-test-annotations@v0.7.0
+        uses: guyarb/golang-test-annotations@v0.8.0
         if: always()
         with:
           test-results: build/test.json
