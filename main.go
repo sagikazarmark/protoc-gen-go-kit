@@ -89,7 +89,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.AnnotateSymbol(serverName, protogen.Annotation{Location: service.Location})
 
 	g.P("type ", serverName, " struct {")
-	g.P("*Unimplemented", service.GoName, "Server")
+	g.P("Unimplemented", service.GoName, "Server")
 	g.P()
 	for _, method := range service.Methods {
 		g.AnnotateSymbol(serverName+"."+method.GoName, protogen.Annotation{Location: method.Location})
